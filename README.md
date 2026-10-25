@@ -59,18 +59,20 @@ Environment variables, all optional:
 
 | Variable | Default | What it does |
 |---|---|---|
-| `HOST` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` only behind a firewall, or inside WSL (see below). |
+| HOST | 127.0.0.1 (0.0.0.0 inside WSL) | Address to listen on. Set 0.0.0.0 elsewhere only behind a firewall. |
 | `PORT` | `8080` | Port. Keep 8080: the viewer connects to this port. |
 | `ALLOWED_ORIGINS` | `https://radrobin.com,https://www.radrobin.com` | Websites allowed to call the server from a browser, comma-separated. |
 | `TS_DEVICE` | auto | `gpu`, `cpu` or `mps`. |
-| `TS_BIN` | found on PATH | Path to the `TotalSegmentator` command. |
-| `MAX_UPLOAD_MB` | `1024` | Largest accepted upload. |
+| `TS_BIN` | next to the Python running the server, else on PATH | Path to the `TotalSegmentator` command. |
+| `MAX_UPLOAD_MB` | `0 (no limit)` | Largest accepted upload. |
 
 Example: `PORT=8090 TS_DEVICE=gpu python server.py`
 
 ### Windows with WSL
 
-If TotalSegmentator runs in Ubuntu under WSL, start the server inside Ubuntu with `HOST=0.0.0.0 python server.py`, so the Windows browser can reach it at `http://localhost:8080`. WSL's network is reachable only from your own Windows computer.
+If TotalSegmentator runs in Ubuntu under WSL, start the server inside Ubuntu as usual. It detects WSL and listens on `0.0.0.0`, so the Windows browser can reach it at `http://localhost:8080`. WSL's network is reachable only from your own Windows computer.
+
+You don't need to activate your Python environment first: running it as `~/your_env/bin/python server.py` is enough, and the server finds TotalSegmentator in the same environment.
 
 On some Ubuntu versions `/tmp` is limited to about 2 GB, which is too small for installing PyTorch. If `pip install` fails with "No space left on device", run `export TMPDIR=~/tmp && mkdir -p ~/tmp` first.
 
