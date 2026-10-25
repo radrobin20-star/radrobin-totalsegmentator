@@ -1,0 +1,4 @@
+TotalSegmentator>=2.0,<3
+fastapi
+uvicorn[standard]
+python-multipart
