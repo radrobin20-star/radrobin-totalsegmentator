@@ -6,20 +6,24 @@ The viewer sends a NIfTI volume to POST /segment and receives a
 multilabel NIfTI mask back. Nothing is sent to RadRobin or anyone else.
 
 Settings (environment variables, all optional):
-  HOST             address to listen on            default 127.0.0.1 (this computer only)
+  HOST             address to listen on            default 127.0.0.1 (this computer only),
+                                                   or 0.0.0.0 inside WSL so Windows can reach it
   PORT             port                            default 8080
   ALLOWED_ORIGINS  comma-separated websites allowed to call this server
                    default https://radrobin.com,https://www.radrobin.com
-  TS_BIN           path to the TotalSegmentator command   default: found on PATH
+  TS_BIN           path to the TotalSegmentator command
+                   default: next to the Python running this server, else on PATH
   TS_DEVICE        gpu | cpu | mps                 default: TotalSegmentator decides
-  MAX_UPLOAD_MB    largest accepted upload         default 1024
+  MAX_UPLOAD_MB    largest accepted upload in MB   default 0 (no limit)
 """
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 from importlib import metadata
+from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,7 +31,30 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.background import BackgroundTask
 
 API_VERSION = "1"
-HOST = os.environ.get("HOST", "127.0.0.1")
+
+
+def _in_wsl():
+    try:
+        return "microsoft" in Path("/proc/version").read_text().lower()
+    except OSError:
+        return False
+
+
+def _find_totalsegmentator():
+    # 1. explicit setting; 2. next to the Python running this server (works when the
+    # environment is not activated, e.g. ~/env/bin/python server.py); 3. the PATH.
+    if os.environ.get("TS_BIN"):
+        return os.environ["TS_BIN"]
+    bin_dir = Path(sys.executable).parent
+    for name in ("TotalSegmentator", "TotalSegmentator.exe"):
+        if (bin_dir / name).exists():
+            return str(bin_dir / name)
+    return shutil.which("TotalSegmentator") or "TotalSegmentator"
+
+
+# Inside WSL the Windows browser can only reach the server on 0.0.0.0.
+# WSL's network is reachable only from the same Windows computer.
+HOST = os.environ.get("HOST") or ("0.0.0.0" if _in_wsl() else "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8080"))
 ALLOWED_ORIGINS = [
     o.strip()
@@ -36,9 +63,9 @@ ALLOWED_ORIGINS = [
     ).split(",")
     if o.strip()
 ]
-TS_BIN = os.environ.get("TS_BIN") or shutil.which("TotalSegmentator") or "TotalSegmentator"
+TS_BIN = _find_totalsegmentator()
 TS_DEVICE = os.environ.get("TS_DEVICE")
-MAX_BYTES = int(os.environ.get("MAX_UPLOAD_MB", "1024")) * 1024 * 1024
+MAX_BYTES = int(os.environ.get("MAX_UPLOAD_MB", "0")) * 1024 * 1024  # 0 = no limit
 
 try:
     TS_VERSION = metadata.version("TotalSegmentator")
@@ -87,23 +114,25 @@ def segment(file: UploadFile = File(...), fast_mode: str = Form("false")):
     # A sync endpoint: FastAPI runs it in a worker thread, so the long
     # TotalSegmentator run doesn't freeze the server.
     work_dir = tempfile.mkdtemp(prefix="radrobin_ts_")
-    # The uploaded filename is never used in paths or commands.
-    name = (file.filename or "").lower()
-    in_ext = ".nii.gz" if name.endswith(".gz") else ".nii"
-    input_path = os.path.join(work_dir, "input" + in_ext)
-    output_path = os.path.join(work_dir, "mask.nii.gz")
 
     try:
+        # The uploaded filename is never used in paths or commands. Whether the
+        # upload is gzip-compressed is read from its first bytes, not its name,
+        # and the mask is returned in the same format (.nii.gz or .nii).
+        first = file.file.read(1024 * 1024)
+        ext = ".nii.gz" if first[:2] == b"\x1f\x8b" else ".nii"
+        input_path = os.path.join(work_dir, "input" + ext)
+        output_path = os.path.join(work_dir, "mask" + ext)
+
         written = 0
         with open(input_path, "wb") as f:
-            while True:
-                chunk = file.file.read(1024 * 1024)
-                if not chunk:
-                    break
+            chunk = first
+            while chunk:
                 written += len(chunk)
-                if written > MAX_BYTES:
+                if MAX_BYTES and written > MAX_BYTES:
                     raise HTTPException(status_code=413, detail="File too large")
                 f.write(chunk)
+                chunk = file.file.read(1024 * 1024)
 
         cmd = [TS_BIN, "-i", input_path, "-o", output_path, "--ml"]
         fast = fast_mode.strip().lower() == "true"
@@ -128,8 +157,8 @@ def segment(file: UploadFile = File(...), fast_mode: str = Form("false")):
         # The temporary folder (input and mask) is deleted after the response is sent.
         return FileResponse(
             output_path,
-            media_type="application/gzip",
-            filename="mask.nii.gz",
+            media_type="application/octet-stream",
+            filename="mask" + ext,
             background=BackgroundTask(shutil.rmtree, work_dir, True),
         )
     except BaseException:
@@ -142,4 +171,5 @@ if __name__ == "__main__":
 
     print(f"RadRobin TotalSegmentator server (TotalSegmentator {TS_VERSION}) on http://{HOST}:{PORT}")
     print(f"Accepting requests from: {', '.join(ALLOWED_ORIGINS)}")
+    print(f"Using: {TS_BIN}")
     uvicorn.run(app, host=HOST, port=PORT)
