@@ -1,7 +1,3 @@
-
-
-
-
 # RadRobin + TotalSegmentator
 
 Run [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) on your own GPU and see the results in the [RadRobin](https://radrobin.com) browser viewer: select a CT series, press **F**, and get 117 named structures you can review, edit in 2D and 3D, and save as DICOM SEG.
@@ -21,7 +17,7 @@ Two abdominal CT scans with ready-made TotalSegmentator segmentations are attach
 | `kits_case_1.zip` | C4KC-KiTS `002` | `261` |
 | `kits_case_2.zip` | C4KC-KiTS `003` | `270` |
 
-1. Download a zip and unzip it. It contains `CT/` (the DICOM series) and `segmentation/` (the DICOM SEG).
+1. Download a zip and unzip it. It contains the DICOM series and the DICOM SEG.
 2. Open the [RadRobin viewer](https://radrobin.com/viewer/index.html), click **Select Folder** and choose the case folder.
 
 **Sample data license:** CT images from the C4KC-KiTS collection, The Cancer Imaging Archive, licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), unchanged. Please cite Heller N, et al. *Data from C4KC-KiTS*, TCIA, 2019, https://doi.org/10.7937/TCIA.2019.IX49E8NX, and Clark K, et al. *The Cancer Imaging Archive (TCIA)*, J Digit Imaging 2013, https://doi.org/10.1007/s10278-013-9622-7. Follow the [TCIA Data Usage Policy](https://wiki.cancerimagingarchive.net/x/c4hF) and do not attempt to identify the patients. Segmentations were created with TotalSegmentator `VERSION 2.13.0` (`total` task, `standard` mode) in RadRobin, are shared under CC BY 3.0, and have not been reviewed by a radiologist.
@@ -66,7 +62,7 @@ Environment variables, all optional:
 | `TS_BIN` | next to the Python running the server, else on PATH | Path to the `TotalSegmentator` command. |
 | `MAX_UPLOAD_MB` | `0 (no limit)` | Largest accepted upload. |
 
-Example: `PORT=8090 TS_DEVICE=gpu python server.py`
+Example: `PORT=8080 TS_DEVICE=gpu python server.py`
 
 ### Windows with WSL
 
