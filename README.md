@@ -18,7 +18,7 @@ Two abdominal CT scans with ready-made TotalSegmentator segmentations are attach
 | `kits_case_2.zip` | C4KC-KiTS `003` | `270` |
 
 1. Download a zip and unzip it. It contains the DICOM series and the DICOM SEG.
-2. Open the [RadRobin viewer](https://radrobin.com/viewer/index.html), click **Select Folder** and choose the case folder.
+2. Open the [RadRobin viewer](https://radrobin.com/viewer/index.html), click **Select Folder** and choose the case folder (c4kc-002 or c4kc-003).
 
 **Sample data license:** CT images from the C4KC-KiTS collection, The Cancer Imaging Archive, licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), unchanged. Please cite Heller N, et al. *Data from C4KC-KiTS*, TCIA, 2019, https://doi.org/10.7937/TCIA.2019.IX49E8NX, and Clark K, et al. *The Cancer Imaging Archive (TCIA)*, J Digit Imaging 2013, https://doi.org/10.1007/s10278-013-9622-7. Follow the [TCIA Data Usage Policy](https://wiki.cancerimagingarchive.net/x/c4hF) and do not attempt to identify the patients. Segmentations were created with TotalSegmentator `VERSION 2.13.0` (`total` task, `standard` mode) in RadRobin, are shared under CC BY 3.0, and have not been reviewed by a radiologist.
 
@@ -45,7 +45,7 @@ python test_server.py
 
 1. Start `server.py` on the same computer as your browser.
 2. Open the [RadRobin beta viewer](https://radrobin.com/viewer/beta.html) and load a CT.
-3. In review mode, select a series and press **F**. The viewer sends it to `http://localhost:8080`, and the structures appear as a segmentation you can review, edit and save as DICOM SEG.
+3. In review mode, select a series and press **f**. The viewer sends it to `http://localhost:8080`, and the structures appear as a segmentation you can review, edit and save as DICOM SEG.
 
 The beta viewer always connects to `localhost:8080`. To use a GPU on another machine, see [A server on another machine](#a-server-on-another-machine).
 
