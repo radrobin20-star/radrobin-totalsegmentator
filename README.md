@@ -1,6 +1,6 @@
 # RadRobin + TotalSegmentator
 
-Run [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) on your own GPU and see the results in the [RadRobin](https://radrobin.com) browser viewer: select a CT series, press **F**, and get 117 named structures you can review, edit in 2D and 3D, and save as DICOM SEG.
+Run [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) on your own GPU and see the results in the [RadRobin](https://radrobin.com) browser viewer: select a CT series, press **f**, and get 117 named structures you can review, edit in 2D and 3D, and save as DICOM SEG.
 
 - **Private by design.** The viewer runs in your browser and sends the scan only to the server you choose, normally your own computer. Nothing goes to RadRobin.
 - **No install for the viewer.** Open the [RadRobin beta viewer](https://radrobin.com/viewer/beta.html) and load DICOM from a folder or a DICOMweb server.
