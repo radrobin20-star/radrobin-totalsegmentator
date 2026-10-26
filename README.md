@@ -95,4 +95,4 @@ Keep that window open. The viewer talks to `localhost:8080` as usual, and SSH ca
 - The code in this repository is MIT licensed ([LICENSE](LICENSE)). The sample data has its own license, given above under "Try it without installing anything".
 - **Provided as is, without support or warranty. You install and run it yourself.** RadRobin and TotalSegmentator are research tools and are not cleared for clinical use or diagnosis.
 
-Questions and custom development: `<YOUR DOMAIN EMAIL>` · [radrobin.com](https://radrobin.com)
+Questions and custom development: `info@radrobin.com` · [radrobin.com](https://radrobin.com)
